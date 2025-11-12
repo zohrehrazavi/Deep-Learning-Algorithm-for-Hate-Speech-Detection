@@ -1,0 +1,8 @@
+embedding_dim: 100
+hidden_dim: 128
+dropout: 0.3
+vocab_max: 30000
+batch_size: 32
+learning_rate: 0.001
+early_stop_patience: 3
+focal_loss: false

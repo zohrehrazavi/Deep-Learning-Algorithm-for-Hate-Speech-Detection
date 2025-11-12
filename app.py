@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify, render_template
 import pickle
 import os
 from src.main import classify_text_with_models
+from src.dl.infer import compare_models
 
 app = Flask(__name__)
 
@@ -105,9 +106,27 @@ def classify():
             'metadata': metadata
         }
 
+        # Deep learning comparison
+        comparison = compare_models(text, vectorizer, nb_model, lr_model)
+        baseline_ui = {
+            "label": response_data["classification"].title(),
+            "confidence": float(confidence) * 100.0,
+            "explanation": explanation,
+            "metadata": metadata,
+            "model_name": "Rules + Classical ML",
+            "text": text,
+        }
+        deep_best = comparison.get("deep_best", {"label": "neutral", "confidence": 0.0, "model_name": "N/A"})
+        deep_ui = {
+            "label": str(deep_best.get("label", "neutral")).title(),
+            "confidence": float(deep_best.get("confidence", 0.0)),
+            "model_name": deep_best.get("model_name", "N/A"),
+            "text": text,
+        }
+
         # Return appropriate response based on request type
         if not request.is_json:
-            return render_template('index.html', result=response_data)
+            return render_template('index.html', result=response_data, baseline_result=baseline_ui, deep_result=deep_ui)
         return jsonify(response_data)
 
     except Exception as e:

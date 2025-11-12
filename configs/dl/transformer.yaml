@@ -1,0 +1,7 @@
+model_name: distilbert-base-uncased
+max_len: 128
+batch_size: 16
+learning_rate: 5.0e-5
+warmup_ratio: 0.06
+early_stop_patience: 2
+weight_decay: 0.01
