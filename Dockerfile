@@ -17,11 +17,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet')"
 
 # Create necessary directories
-RUN mkdir -p models static templates
+RUN mkdir -p models/dl static templates
 
-# Copy model files first to ensure they exist
-COPY models/*.pkl models/
-COPY models/config.json models/
+# Copy model artifacts (classical + deep learning) before source to leverage cache
+COPY models/ ./models/
 
 # Copy the rest of the application
 COPY . .
