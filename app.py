@@ -35,7 +35,7 @@ vectorizer, nb_model, lr_model = load_models()
 @app.route('/')
 def home():
     """Render the home page with the classification form."""
-    return render_template('index.html')
+    return render_template('index.html', input_text='')
 
 @app.route('/classify', methods=['POST'])
 def classify():
@@ -126,7 +126,13 @@ def classify():
 
         # Return appropriate response based on request type
         if not request.is_json:
-            return render_template('index.html', result=response_data, baseline_result=baseline_ui, deep_result=deep_ui)
+            return render_template(
+                'index.html',
+                result=response_data,
+                baseline_result=baseline_ui,
+                deep_result=deep_ui,
+                input_text=text,
+            )
         return jsonify(response_data)
 
     except Exception as e:
