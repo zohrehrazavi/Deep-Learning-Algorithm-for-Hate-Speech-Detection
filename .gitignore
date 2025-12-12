@@ -43,4 +43,8 @@ models/*.pkl
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db models/dl/transformer/checkpoint/
+*.safetensors
+optimizer.pt
+scheduler.pt
+rng_state.pth
