@@ -125,7 +125,8 @@
                   Deep Learning: BiLSTM-Attention
                 </div>
                 <div class="card-body">
-                  {% if "unavailable" in lstm_result.model_name.lower() %}
+                  {% if lstm_result.model_name and "unavailable" in
+                  lstm_result.model_name.lower() %}
                   <span class="badge bg-warning text-dark">
                     Model not trained
                   </span>
@@ -144,8 +145,8 @@
                   Deep Learning: DistilBERT
                 </div>
                 <div class="card-body">
-                  {% if "unavailable" in transformer_result.model_name.lower()
-                  %}
+                  {% if transformer_result.model_name and "unavailable" in
+                  transformer_result.model_name.lower() %}
                   <span class="badge bg-warning text-dark">
                     Model not trained
                   </span>

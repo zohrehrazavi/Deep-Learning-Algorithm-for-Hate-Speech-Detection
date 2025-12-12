@@ -8,7 +8,6 @@ from flask import Flask, request, jsonify, render_template
 import pickle
 import os
 from src.main import classify_text_with_models
-from src.dl.infer import compare_models
 
 app = Flask(__name__)
 
@@ -107,7 +106,6 @@ def classify():
         }
 
         # Deep learning comparison
-        comparison = compare_models(text, vectorizer, nb_model, lr_model)
         baseline_ui = {
             "label": response_data["classification"].title(),
             "confidence": float(confidence) * 100.0,
@@ -117,9 +115,29 @@ def classify():
             "text": text,
         }
         
-        # Get both DL models separately
-        lstm_result = comparison.get("deep_lstm", {"label": "neutral", "confidence": 0.0, "model_name": "BiLSTM-Attn (unavailable)"})
-        transformer_result = comparison.get("deep_transformer", {"label": "neutral", "confidence": 0.0, "model_name": "DistilBERT (unavailable)"})
+        # Get both DL models separately with error handling
+        # Initialize with default unavailable values
+        lstm_result = {"label": "neutral", "confidence": 0.0, "model_name": "BiLSTM-Attn (unavailable)"}
+        transformer_result = {"label": "neutral", "confidence": 0.0, "model_name": "DistilBERT (unavailable)"}
+        
+        # Try Transformer
+        try:
+            from src.dl.infer import predict_transformer
+            transformer_result = predict_transformer(text)
+        except Exception as e:
+            print(f"Warning: Transformer prediction failed: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Try LSTM
+        try:
+            from src.dl.infer import predict_lstm
+            lstm_result = predict_lstm(text)
+        except Exception as e:
+            print(f"Warning: LSTM prediction failed: {e}")
+            import traceback
+            traceback.print_exc()
+            lstm_result = {"label": "neutral", "confidence": 0.0, "model_name": "BiLSTM-Attn (unavailable)"}
         
         lstm_ui = {
             "label": str(lstm_result.get("label", "neutral")).title(),

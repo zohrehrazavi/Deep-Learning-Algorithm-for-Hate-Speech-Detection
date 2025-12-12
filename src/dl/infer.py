@@ -51,7 +51,10 @@ def _load_transformer_model(base_dir: str = "models/dl/transformer"):
             labels = load_json(label_map_path)
         _TRANSFORMER_CACHE.update({"tokenizer": tok, "model": mdl, "labels": labels})
         return tok, mdl, labels
-    except Exception:
+    except Exception as e:
+        print(f"Error loading transformer model: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None, None
 
 
@@ -80,7 +83,10 @@ def predict_transformer(text: str) -> Dict[str, Any]:
             "confidence": round(float(probs[pred_idx]) * 100.0, 1),
             "model_name": "DistilBERT",
         }
-    except Exception:
+    except Exception as e:
+        print(f"Error predicting with transformer: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "label": "neutral",
             "confidence": 0.0,
@@ -127,7 +133,10 @@ def _load_lstm_model(base_dir: str = "models/dl/lstm"):
             labels = load_json(label_map_path)
         _LSTM_CACHE.update({"model": model, "vocab": vocab, "labels": labels})
         return model, vocab, labels
-    except Exception:
+    except Exception as e:
+        print(f"Error loading LSTM model: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None, None
 
 
@@ -158,7 +167,10 @@ def predict_lstm(text: str) -> Dict[str, Any]:
             "confidence": round(float(probs[pred_idx]) * 100.0, 1),
             "model_name": "BiLSTM-Attn",
         }
-    except Exception:
+    except Exception as e:
+        print(f"Error predicting with LSTM: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "label": "neutral",
             "confidence": 0.0,
