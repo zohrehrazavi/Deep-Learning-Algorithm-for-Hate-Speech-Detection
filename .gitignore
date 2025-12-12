@@ -44,7 +44,8 @@ models/*.pkl
 # OS
 .DS_Store
 Thumbs.db models/dl/transformer/checkpoint/
-*.safetensors
+models/dl/transformer/checkpoint/**/*.safetensors
 optimizer.pt
 scheduler.pt
 rng_state.pth
+# Note: models/dl/transformer/model.safetensors is tracked with Git LFS
