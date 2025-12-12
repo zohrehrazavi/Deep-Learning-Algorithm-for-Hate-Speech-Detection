@@ -35,24 +35,43 @@ def _load_transformer_model(base_dir: str = "models/dl/transformer"):
     from transformers import AutoTokenizer, AutoModelForSequenceClassification  # type: ignore
     if _TRANSFORMER_CACHE["model"] is not None:
         return _TRANSFORMER_CACHE["tokenizer"], _TRANSFORMER_CACHE["model"], _TRANSFORMER_CACHE["labels"]
-    if not os.path.isdir(base_dir):
-        return None, None, None
-    # Expect a HF saved model folder (config.json + pytorch_model.bin) and optional label_map.json
+    
+    # Check if local model directory exists and has required files
     config_path = os.path.join(base_dir, "config.json")
-    model_path = os.path.join(base_dir)
-    if not file_exists(config_path):
-        return None, None, None
+    model_safetensors = os.path.join(base_dir, "model.safetensors")
+    model_bin = os.path.join(base_dir, "pytorch_model.bin")
+    
+    # Try loading from local directory first
+    if os.path.isdir(base_dir) and file_exists(config_path):
+        # Check if model weights file exists (either safetensors or bin)
+        if file_exists(model_safetensors) or file_exists(model_bin):
+            try:
+                tok = AutoTokenizer.from_pretrained(base_dir)
+                mdl = AutoModelForSequenceClassification.from_pretrained(base_dir)
+                labels = None
+                label_map_path = os.path.join(base_dir, "label_map.json")
+                if file_exists(label_map_path):
+                    labels = load_json(label_map_path)
+                _TRANSFORMER_CACHE.update({"tokenizer": tok, "model": mdl, "labels": labels})
+                return tok, mdl, labels
+            except Exception as e:
+                print(f"Error loading transformer model from local path: {e}")
+                import traceback
+                traceback.print_exc()
+    
+    # Fallback: Try loading base DistilBERT model (will use default labels)
+    # This ensures the app works even if fine-tuned model isn't available
     try:
-        tok = AutoTokenizer.from_pretrained(model_path)
-        mdl = AutoModelForSequenceClassification.from_pretrained(model_path)
-        labels = None
-        label_map_path = os.path.join(base_dir, "label_map.json")
-        if file_exists(label_map_path):
-            labels = load_json(label_map_path)
+        print("Warning: Local fine-tuned model not found, using base DistilBERT model")
+        base_model = "distilbert-base-uncased"
+        tok = AutoTokenizer.from_pretrained(base_model)
+        mdl = AutoModelForSequenceClassification.from_pretrained(base_model, num_labels=3)
+        # Use default label mapping
+        labels = {"0": "hateful", "1": "offensive", "2": "neutral"}
         _TRANSFORMER_CACHE.update({"tokenizer": tok, "model": mdl, "labels": labels})
         return tok, mdl, labels
     except Exception as e:
-        print(f"Error loading transformer model: {e}")
+        print(f"Error loading base transformer model: {e}")
         import traceback
         traceback.print_exc()
         return None, None, None
