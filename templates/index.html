@@ -50,11 +50,7 @@
               </button>
             </div>
             <div class="card-body">
-              <form
-                id="classificationForm"
-                method="POST"
-                action="{{ url_for('classify') }}"
-              >
+              <form method="POST" action="{{ url_for('classify') }}">
                 <div class="mb-3">
                   <label for="text" class="form-label">
                     Enter text to analyze:
@@ -63,8 +59,11 @@
                     class="form-control"
                     id="text"
                     name="text"
-                    rows="4"
-                    required>{{ input_text or '' }}</textarea>
+                    rows="5"
+                    required
+                  >
+{{ input_text or '' }}</textarea
+                  >
                   <div class="form-text">
                     Enter any text or tweet to check if it contains hate speech
                     or offensive content.
@@ -73,215 +72,155 @@
                 <button type="submit" class="btn btn-primary">Analyze</button>
               </form>
 
-              {% if baseline_result or deep_result %}
-              <div class="row mt-4">
-                <div class="col-md-6">
-                  <div class="card border-secondary shadow-sm">
-                    <div class="card-header bg-light">
-                      Baseline (Rules + Classical ML)
-                    </div>
-                    <div class="card-body">
-                      <h5>
-                        {{ baseline_result.label }} — {{
-                        '%.1f'|format(baseline_result.confidence) }}%
-                      </h5>
-                      <p>{{ baseline_result.explanation }}</p>
-                      {% if baseline_result.metadata %}
-                      <div class="metadata-section mb-2">
-                        {% if baseline_result.metadata.is_rule_based %}
-                        <span
-                          class="badge metadata-badge rule-based-badge"
-                          data-bs-toggle="tooltip"
-                          title="Classification based on predefined rules"
-                        >
-                          Rule-based
-                        </span>
-                        {% endif %} {% if
-                        baseline_result.metadata.flagged_context %}
-                        <span
-                          class="badge metadata-badge context-badge"
-                          data-bs-toggle="tooltip"
-                          title="Context disclaimer detected"
-                        >
-                          Context: {{ baseline_result.metadata.flagged_context
-                          }}
-                        </span>
-                        {% endif %} {% if
-                        baseline_result.metadata.semantic_alert %}
-                        <span
-                          class="badge metadata-badge semantic-badge"
-                          data-bs-toggle="tooltip"
-                          title="Semantic patterns detected"
-                        >
-                          Semantic Alert
-                        </span>
-                        {% endif %}
-                      </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
+              {% if baseline_result or lstm_result or transformer_result %}
+              <hr />
+              <h4>Results:</h4>
 
-                <div class="col-md-6">
-                  <div class="card border-primary shadow-sm">
-                    <div class="card-header bg-light">
-                      Deep Learning (BiLSTM / DistilBERT)
-                    </div>
-                    <div class="card-body">
-                      <h5>
-                        {{ deep_result.label }} — {{
-                        '%.1f'|format(deep_result.confidence) }}%
-                      </h5>
-                      <p>Model: {{ deep_result.model_name }}</p>
-                    </div>
+              {% if baseline_result %}
+              <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                  Baseline (Rules + Classical ML)
+                </div>
+                <div class="card-body">
+                  <h5>
+                    {{ baseline_result.label }} — {{
+                    '%.1f'|format(baseline_result.confidence) }}%
+                  </h5>
+                  <p>{{ baseline_result.explanation }}</p>
+                  {% if baseline_result.metadata %}
+                  <div class="metadata-section mb-2">
+                    {% if baseline_result.metadata.is_rule_based %}
+                    <span
+                      class="badge metadata-badge rule-based-badge"
+                      data-bs-toggle="tooltip"
+                      title="Classification based on predefined rules"
+                    >
+                      Rule-based
+                    </span>
+                    {% endif %} {% if baseline_result.metadata.flagged_context
+                    %}
+                    <span
+                      class="badge metadata-badge context-badge"
+                      data-bs-toggle="tooltip"
+                      title="Context disclaimer detected"
+                    >
+                      Context: {{ baseline_result.metadata.flagged_context }}
+                    </span>
+                    {% endif %} {% if baseline_result.metadata.semantic_alert %}
+                    <span
+                      class="badge metadata-badge semantic-badge"
+                      data-bs-toggle="tooltip"
+                      title="Semantic patterns detected"
+                    >
+                      Semantic Alert
+                    </span>
+                    {% endif %}
                   </div>
+                  {% endif %}
                 </div>
               </div>
-              {% endif %}
+              {% endif %} {% if lstm_result %}
+              <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                  Deep Learning: BiLSTM-Attention
+                </div>
+                <div class="card-body">
+                  {% if "unavailable" in lstm_result.model_name.lower() %}
+                  <span class="badge bg-warning text-dark">
+                    Model not trained
+                  </span>
+                  {% else %}
+                  <h5>
+                    {{ lstm_result.label }} — {{
+                    '%.1f'|format(lstm_result.confidence) }}%
+                  </h5>
+                  <p>Model: {{ lstm_result.model_name }}</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %} {% if transformer_result %}
+              <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                  Deep Learning: DistilBERT
+                </div>
+                <div class="card-body">
+                  {% if "unavailable" in transformer_result.model_name.lower()
+                  %}
+                  <span class="badge bg-warning text-dark">
+                    Model not trained
+                  </span>
+                  {% else %}
+                  <h5>
+                    {{ transformer_result.label }} — {{
+                    '%.1f'|format(transformer_result.confidence) }}%
+                  </h5>
+                  <p>Model: {{ transformer_result.model_name }}</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %} {% endif %}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- How it works modal -->
-    <div class="modal fade" id="howItWorksModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
+    <!-- How it Works Modal -->
+    <div
+      class="modal fade"
+      id="howItWorksModal"
+      tabindex="-1"
+      aria-labelledby="howItWorksModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">
-              How the Hate Speech Detection System Works
-            </h5>
+            <h5 class="modal-title" id="howItWorksModalLabel">How it Works</h5>
             <button
               type="button"
               class="btn-close"
               data-bs-dismiss="modal"
+              aria-label="Close"
             ></button>
           </div>
           <div class="modal-body">
-            <h6>Classification Categories:</h6>
+            <p>
+              This system uses multiple machine learning and deep learning
+              models to detect hate speech and offensive content:
+            </p>
             <ul>
               <li>
-                <strong>Hateful:</strong>
-                Content that expresses hate towards protected groups or contains
-                explicit threats
+                <strong>Baseline:</strong>
+                Combines rule-based detection with classical ML models (Naive
+                Bayes, Logistic Regression)
               </li>
               <li>
-                <strong>Offensive:</strong>
-                Content that contains offensive language but isn't specifically
-                hateful
+                <strong>BiLSTM-Attention:</strong>
+                Deep learning model using bidirectional LSTM with attention
+                mechanism
               </li>
               <li>
-                <strong>Neutral:</strong>
-                Normal, non-offensive content
+                <strong>DistilBERT:</strong>
+                Transformer-based model fine-tuned for hate speech detection
               </li>
             </ul>
-
-            <h6>How Classification Works:</h6>
-            <ol>
-              <li>
-                <strong>Text Processing:</strong>
-                The system first cleans and processes the text, removing
-                irrelevant parts while preserving important context.
-              </li>
-              <li>
-                <strong>Rule-Based Check:</strong>
-                Checks for explicit hate speech indicators and protected group
-                mentions.
-              </li>
-              <li>
-                <strong>Machine Learning:</strong>
-                Uses trained models (Naive Bayes and Logistic Regression) to
-                analyze the text patterns.
-              </li>
-              <li>
-                <strong>Confidence Score:</strong>
-                Indicates how certain the system is about its classification.
-              </li>
-            </ol>
-
-            <h6>Understanding Results:</h6>
-            <ul>
-              <li>
-                High confidence (>80%): Strong indication of the classified
-                category
-              </li>
-              <li>Medium confidence (40-80%): Moderate indication</li>
-              <li>
-                Low confidence (<40%): System is uncertain, may default to
-                neutral
-              </li>
-            </ul>
-
-            <h6>Classification Badges:</h6>
-            <ul>
-              <li>
-                <strong>Rule-based:</strong>
-                Classification determined by predefined patterns and rules
-              </li>
-              <li>
-                <strong>Context:</strong>
-                Special context detected (e.g., gaming references, quotes)
-              </li>
-              <li>
-                <strong>Semantic Alert:</strong>
-                Complex semantic patterns identified
-              </li>
-            </ul>
+            <p>
+              The system analyzes your text and provides classification results
+              from each model, along with confidence scores.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
     </div>
-
-    <script>
-      // Enable tooltips
-      var tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]'),
-      )
-      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-      })
-
-      // Form submission handling
-      document
-        .getElementById('classificationForm')
-        .addEventListener('submit', function (e) {
-          e.preventDefault()
-
-          // Show loading state
-          const submitButton = this.querySelector('button[type="submit"]')
-          const originalText = submitButton.innerHTML
-          submitButton.innerHTML = 'Analyzing...'
-          submitButton.disabled = true
-
-          fetch("{{ url_for('classify') }}", {
-            method: 'POST',
-            body: new FormData(this),
-          })
-            .then((response) => response.text())
-            .then((html) => {
-              // Replace the entire content with the new HTML
-              document.documentElement.innerHTML = html
-              // Re-initialize tooltips after content update
-              var tooltipTriggerList = [].slice.call(
-                document.querySelectorAll('[data-bs-toggle="tooltip"]'),
-              )
-              var tooltipList = tooltipTriggerList.map(function (
-                tooltipTriggerEl,
-              ) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-              })
-            })
-            .catch((error) => {
-              console.error('Error:', error)
-              alert('An error occurred while processing your request.')
-            })
-            .finally(() => {
-              // Reset button state
-              submitButton.innerHTML = originalText
-              submitButton.disabled = false
-            })
-        })
-    </script>
   </body>
 </html>

@@ -6,16 +6,16 @@ import os
 class TestClassification(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Load models before running tests."""
+        """Load ML models before running tests."""
         try:
-            with open('models/naive_bayes.pkl', 'rb') as f:
+            with open('models/ml/naive_bayes.pkl', 'rb') as f:
                 cls.nb_model = pickle.load(f)
-            with open('models/logistic_regression.pkl', 'rb') as f:
+            with open('models/ml/logistic_regression.pkl', 'rb') as f:
                 cls.lr_model = pickle.load(f)
-            with open('models/tfidf_vectorizer.pkl', 'rb') as f:
+            with open('models/ml/tfidf_vectorizer.pkl', 'rb') as f:
                 cls.vectorizer = pickle.load(f)
         except FileNotFoundError:
-            raise unittest.SkipTest("Model files not found. Run training first.")
+            raise unittest.SkipTest("ML model files not found. Run training first.")
 
     def test_neutral_classification(self):
         """Test classification of neutral text."""

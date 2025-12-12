@@ -40,3 +40,14 @@ def file_exists(path: str) -> bool:
     return os.path.isfile(path)
 
 
+def load_yaml_config(path: str) -> Dict:
+    """Load YAML configuration file."""
+    try:
+        import yaml  # type: ignore
+        with open(path, "r") as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        # Fallback to minimal defaults if yaml not available
+        return {}
+
+

@@ -570,20 +570,20 @@ def main():
         print(classification_report(y_test, y_pred_lr, target_names=['Hateful', 'Offensive', 'Neutral']))
         
         # Save models
-        print("\nSaving models and configuration...")
-        if not os.path.exists('models'):
-            os.makedirs('models')
+        print("\nSaving ML models and configuration...")
+        if not os.path.exists('models/ml'):
+            os.makedirs('models/ml')
         
         with tqdm(total=4, desc="Saving files") as pbar:
-            with open('models/naive_bayes.pkl', 'wb') as f:
+            with open('models/ml/naive_bayes.pkl', 'wb') as f:
                 pickle.dump(nb_model, f)
                 pbar.update(1)
             
-            with open('models/logistic_regression.pkl', 'wb') as f:
+            with open('models/ml/logistic_regression.pkl', 'wb') as f:
                 pickle.dump(lr_model, f)
                 pbar.update(1)
             
-            with open('models/tfidf_vectorizer.pkl', 'wb') as f:
+            with open('models/ml/tfidf_vectorizer.pkl', 'wb') as f:
                 pickle.dump(tfidf, f)
                 pbar.update(1)
             
@@ -591,12 +591,12 @@ def main():
                 "class_mapping": class_mapping,
                 "confidence_threshold": CONFIDENCE_THRESHOLD
             }
-            with open('models/config.json', 'w') as f:
+            with open('models/ml/config.json', 'w') as f:
                 json.dump(config, f, indent=4)
                 pbar.update(1)
         
         print("\n✓ Training completed successfully!")
-        print("\nModel files saved in 'models/' directory:")
+        print("\nML model files saved in 'models/ml/' directory:")
         print("- naive_bayes.pkl")
         print("- logistic_regression.pkl")
         print("- tfidf_vectorizer.pkl")

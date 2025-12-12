@@ -52,7 +52,15 @@ Modern hate speech detection system that blends rule-based heuristics, classical
 │       ├── infer.py         # Baseline vs DL comparison utilities
 │       └── ...              # datasets, tokenization, models, utils
 ├── configs/dl/              # YAML configs for DL experiments
-├── models/                  # Saved baseline + deep learning artifacts
+├── models/                  # All trained models (organized by type)
+│   ├── ml/                  # Classical ML models (Naive Bayes, Logistic Regression)
+│   │   ├── naive_bayes.pkl
+│   │   ├── logistic_regression.pkl
+│   │   ├── tfidf_vectorizer.pkl
+│   │   └── config.json
+│   └── dl/                  # Deep learning models
+│       ├── lstm/            # BiLSTM-Attention model artifacts
+│       └── transformer/     # DistilBERT model artifacts
 ├── templates/index.html     # Bootstrap UI with side-by-side cards
 ├── static/style.css         # UI styling
 ├── scripts/                 # Automation helpers (train/evaluate)
@@ -76,7 +84,14 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
-Generates `models/{naive_bayes.pkl, logistic_regression.pkl, tfidf_vectorizer.pkl, config.json}` after preprocessing, SMOTE balancing, training, and evaluation.
+Generates ML models in `models/ml/` directory:
+
+- `models/ml/naive_bayes.pkl` - Naive Bayes classifier
+- `models/ml/logistic_regression.pkl` - Logistic Regression classifier
+- `models/ml/tfidf_vectorizer.pkl` - TF-IDF feature extractor
+- `models/ml/config.json` - Model configuration
+
+After preprocessing, SMOTE balancing, training, and evaluation.
 
 **BiLSTM + Attention**
 
@@ -102,8 +117,8 @@ Automation scripts are available under `scripts/` (`train_lstm.sh`, `train_trans
 python app.py
 ```
 
-- UI: http://localhost:8081
-- API: `POST http://localhost:8081/classify` with `{"text": "..."}`
+- UI: http://localhost:8080 (or port specified by `PORT` environment variable)
+- API: `POST http://localhost:8080/classify` with `{"text": "..."}`
 
 API responses include the label, confidence (formatted percentage), explanation, and metadata describing whether rules triggered.
 
@@ -121,7 +136,7 @@ The suite covers preprocessing, hybrid classification logic, model interfaces, a
 docker-compose up --build      # recommended
 ```
 
-The container exposes the app on port 8082 by default. Bind-mount `./models` and `./data` to persist artifacts. Environment variables:
+The container exposes the app on port 8082 by default. Bind-mount `./models` (including both `models/ml/` and `models/dl/` subdirectories) and `./data` to persist artifacts. Environment variables:
 
 - `FLASK_ENV` (`production` | `development`, default `production`)
 - `PORT` (default `8082`)
@@ -131,6 +146,17 @@ The container exposes the app on port 8082 by default. Bind-mount `./models` and
 - Keep fine-tuning BiLSTM and DistilBERT checkpoints and drop the improved weights under `models/dl/`.
 - Expand the comparison dashboard with per-class probability charts and historical metrics.
 - Integrate continuous evaluation to monitor drift as new data is added.
+
+---
+
+## Model Organization
+
+Models are organized by type for clarity:
+
+- **ML Models** (`models/ml/`): Classical machine learning models (Naive Bayes, Logistic Regression) trained with scikit-learn
+- **DL Models** (`models/dl/`): Deep learning models (BiLSTM, Transformer) trained with PyTorch
+
+See `models/README.md` for detailed documentation on the model structure and how to train each type.
 
 ---
 

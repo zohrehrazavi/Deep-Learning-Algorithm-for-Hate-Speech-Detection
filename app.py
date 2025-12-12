@@ -14,19 +14,19 @@ app = Flask(__name__)
 
 def load_models():
     """
-    Load trained models from disk.
+    Load trained ML models from disk.
     Returns (vectorizer, nb_model, lr_model) or (None, None, None) if loading fails.
     """
     try:
-        with open('models/naive_bayes.pkl', 'rb') as f:
+        with open('models/ml/naive_bayes.pkl', 'rb') as f:
             nb_model = pickle.load(f)
-        with open('models/logistic_regression.pkl', 'rb') as f:
+        with open('models/ml/logistic_regression.pkl', 'rb') as f:
             lr_model = pickle.load(f)
-        with open('models/tfidf_vectorizer.pkl', 'rb') as f:
+        with open('models/ml/tfidf_vectorizer.pkl', 'rb') as f:
             vectorizer = pickle.load(f)
         return vectorizer, nb_model, lr_model
     except FileNotFoundError:
-        print("Error: Model files not found. Please run 'python src/main.py' first to train the models.")
+        print("Error: ML model files not found. Please run 'python src/main.py' first to train the models.")
         return None, None, None
 
 # Load models at startup
@@ -116,11 +116,22 @@ def classify():
             "model_name": "Rules + Classical ML",
             "text": text,
         }
-        deep_best = comparison.get("deep_best", {"label": "neutral", "confidence": 0.0, "model_name": "N/A"})
-        deep_ui = {
-            "label": str(deep_best.get("label", "neutral")).title(),
-            "confidence": float(deep_best.get("confidence", 0.0)),
-            "model_name": deep_best.get("model_name", "N/A"),
+        
+        # Get both DL models separately
+        lstm_result = comparison.get("deep_lstm", {"label": "neutral", "confidence": 0.0, "model_name": "BiLSTM-Attn (unavailable)"})
+        transformer_result = comparison.get("deep_transformer", {"label": "neutral", "confidence": 0.0, "model_name": "DistilBERT (unavailable)"})
+        
+        lstm_ui = {
+            "label": str(lstm_result.get("label", "neutral")).title(),
+            "confidence": float(lstm_result.get("confidence", 0.0)),
+            "model_name": lstm_result.get("model_name", "BiLSTM-Attn"),
+            "text": text,
+        }
+        
+        transformer_ui = {
+            "label": str(transformer_result.get("label", "neutral")).title(),
+            "confidence": float(transformer_result.get("confidence", 0.0)),
+            "model_name": transformer_result.get("model_name", "DistilBERT"),
             "text": text,
         }
 
@@ -130,7 +141,8 @@ def classify():
                 'index.html',
                 result=response_data,
                 baseline_result=baseline_ui,
-                deep_result=deep_ui,
+                lstm_result=lstm_ui,
+                transformer_result=transformer_ui,
                 input_text=text,
             )
         return jsonify(response_data)
