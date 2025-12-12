@@ -1,227 +1,511 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hate Speech Detection</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-      .metadata-badge {
-        font-size: 0.8em;
-        margin-right: 5px;
-        padding: 3px 8px;
-      }
-      .rule-based-badge {
-        background-color: #17a2b8;
-        color: white;
-      }
-      .context-badge {
-        background-color: #6c757d;
-        color: white;
-      }
-      .semantic-badge {
-        background-color: #28a745;
-        color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card">
-            <div class="card-header bg-primary text-white">
-              <h2 class="mb-0">Hate Speech Detection System</h2>
-              <button
-                type="button"
-                class="btn btn-link text-white"
-                data-bs-toggle="modal"
-                data-bs-target="#howItWorksModal"
-              >
-                How it works?
-              </button>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Hate Speech Detection System</title>
+
+        <!-- CSS FILES -->        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
+                        
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}?v=2.0" rel="stylesheet">
+
+        <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}?v=2.0" rel="stylesheet">
+
+        <link href="{{ url_for('static', filename='css/templatemo-topic-listing.css') }}?v=2.0" rel="stylesheet">      
+    </head>
+    
+    <body id="top">
+
+        <main>
+
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="#section_1">
+                        <i class="bi-shield-check"></i>
+                        <span>DL Hate Detection</span>
+                    </a>
+    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+    
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-lg-5 me-lg-auto">
+                            <li class="nav-item">
+                                <a class="nav-link click-scroll" href="#section_1">Home</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link click-scroll" href="#section_2">Models</a>
+                            </li>
+    
+                            <li class="nav-item">
+                                <a class="nav-link click-scroll" href="#section_3">Training</a>
+                            </li>
+    
+                            <li class="nav-item">
+                                <a class="nav-link click-scroll" href="#section_4">Details</a>
+                            </li>
+    
+                            <li class="nav-item">
+                                <a class="nav-link click-scroll" href="#section_5">Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+
+            <section class="hero-section d-flex justify-content-center align-items-center" id="section_1">
+                <div class="container">
+                    <div class="row">
+
+                        <div class="col-lg-10 col-12 mx-auto">
+                            <h1 class="text-white text-center">Deep Learning Algorithm for Hate Speech Detection</h1>
+
+                            <h6 class="text-center">A Comparative Study of BiLSTM-Attention and DistilBERT Models</h6>
+
+                            <div class="mt-4 pt-2 mb-lg-0 mb-5">
+                                <div class="bg-white rounded-3 p-4 shadow-lg">
+                                    <form method="POST" action="{{ url_for('classify') }}" id="analyzeForm">
+                                        <label for="textInput" class="form-label fw-bold mb-3">Test the Models:</label>
+                                        <textarea name="text" class="form-control mb-3" id="textInput" rows="4" placeholder="Enter text to analyze with both BiLSTM-Attention and DistilBERT models. Compare predictions and confidence scores..." required>{{ input_text or '' }}</textarea>
+                                        <p class="text-muted small mb-3">Enter text to compare predictions from baseline ML and deep learning models (BiLSTM-Attention & DistilBERT). Results will show classification labels and confidence scores for each model.</p>
+                                        <button type="submit" class="btn custom-btn w-100" id="analyzeBtn">Analyze</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+
+            {% if baseline_result or lstm_result or transformer_result %}
+            <section class="section-padding section-bg" id="results-section">
+                <div class="container">
+                    <div class="row justify-content-center align-items-stretch">
+                        <div class="col-12 text-center mb-5">
+                            <h2 class="mb-3">Results:</h2>
+                        </div>
+
+                        {% if baseline_result %}
+                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0 d-flex">
+                            <div class="custom-block bg-white shadow-lg w-100">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-3" style="min-height: 60px;">
+                                        <h5 class="mb-0">Baseline (Rules + Classical ML)</h5>
+                                    </div>
+                                    <div class="mb-3 flex-grow-1">
+                                        {% set baseline_label = baseline_result.label.lower() %}
+                                        {% set baseline_conf = baseline_result.confidence %}
+                                        <div class="alert {% if baseline_label == 'hateful' %}alert-danger{% elif baseline_label == 'offensive' %}alert-warning{% else %}alert-info{% endif %} mb-2">
+                                            <strong>{{ baseline_result.label }} — {{ '%.1f'|format(baseline_conf) }}%</strong>
+                                        </div>
+                                        {% if baseline_result.metadata %}
+                                        <div class="mb-2">
+                                            {% if baseline_result.metadata.is_rule_based %}
+                                            <span class="badge bg-info">Rule-based</span>
+                                            {% endif %}
+                                            {% if baseline_result.metadata.flagged_context %}
+                                            <span class="badge bg-secondary">Context: {{ baseline_result.metadata.flagged_context }}</span>
+                                            {% endif %}
+                                            {% if baseline_result.metadata.semantic_alert %}
+                                            <span class="badge bg-success">Semantic Alert</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        <p class="text-muted small mb-0">{{ baseline_result.explanation }}</p>
+                                    </div>
+                                    <div class="mt-auto pt-3">
+                                        <i class="bi-cpu fs-1 text-primary d-block text-center"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if lstm_result %}
+                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0 d-flex">
+                            <div class="custom-block bg-white shadow-lg w-100">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-3" style="min-height: 60px;">
+                                        <h5 class="mb-0">Deep Learning: BiLSTM-Attention</h5>
+                                    </div>
+                                    <div class="mb-3 flex-grow-1">
+                                        {% if lstm_result.model_name and "unavailable" in lstm_result.model_name.lower() %}
+                                        <div class="alert alert-warning mb-2">
+                                            <strong>Model not trained</strong>
+                                        </div>
+                                        {% else %}
+                                        {% set lstm_label = lstm_result.label.lower() %}
+                                        {% set lstm_conf = lstm_result.confidence %}
+                                        <div class="alert {% if lstm_label == 'hateful' %}alert-danger{% elif lstm_label == 'offensive' %}alert-warning{% else %}alert-success{% endif %} mb-2">
+                                            <strong>{{ lstm_result.label }} — {{ '%.1f'|format(lstm_conf) }}%</strong>
+                                        </div>
+                                        {% endif %}
+                                        <p class="text-muted small mb-0">Model: {{ lstm_result.model_name }}</p>
+                                    </div>
+                                    <div class="mt-auto pt-3">
+                                        <i class="bi-diagram-3 fs-1 text-success d-block text-center"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if transformer_result %}
+                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0 d-flex">
+                            <div class="custom-block bg-white shadow-lg w-100">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-3" style="min-height: 60px;">
+                                        <h5 class="mb-0">Deep Learning: DistilBERT</h5>
+                                    </div>
+                                    <div class="mb-3 flex-grow-1">
+                                        {% if transformer_result.model_name and "unavailable" in transformer_result.model_name.lower() %}
+                                        <div class="alert alert-warning mb-2">
+                                            <strong>Model not trained</strong>
+                                        </div>
+                                        {% else %}
+                                        {% set trans_label = transformer_result.label.lower() %}
+                                        {% set trans_conf = transformer_result.confidence %}
+                                        <div class="alert {% if trans_label == 'hateful' %}alert-danger{% elif trans_label == 'offensive' %}alert-warning{% else %}alert-success{% endif %} mb-2">
+                                            <strong>{{ transformer_result.label }} — {{ '%.1f'|format(trans_conf) }}%</strong>
+                                        </div>
+                                        {% endif %}
+                                        <p class="text-muted small mb-0">Model: {{ transformer_result.model_name }}</p>
+                                    </div>
+                                    <div class="mt-auto pt-3">
+                                        <i class="bi-robot fs-1 text-warning d-block text-center"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+
+            <section class="explore-section section-padding" id="section_2">
+                <div class="container">
+                    <div class="row">
+
+                        <div class="col-12 text-center">
+                            <h2 class="mb-4">Detection Models</h2>
+                            <p class="mb-5">This project focuses on <strong>deep learning architectures</strong> (BiLSTM-Attention and DistilBERT) for hate speech detection, with a baseline ML model for comparison</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="row">
+                        <!-- Baseline ML Model - Smaller card -->
+                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
+                            <div class="custom-block bg-white shadow-lg" style="opacity: 0.85;">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-2">Baseline Model</h5>
+                                            <p class="mb-0">Rules + Classical ML</p>
+                                        </div>
+                                        <span class="badge bg-design rounded-pill ms-auto">ML</span>
+                                    </div>
+                                    <p class="mb-3">Combines rule-based detection with classical machine learning (Naive Bayes, Logistic Regression) using TF-IDF vectorization. Used as a baseline for comparison with deep learning approaches.</p>
+                                    <div class="mt-auto">
+                                        <i class="bi-cpu fs-1 text-primary d-block text-center mb-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BiLSTM-Attention - Prominent DL Model -->
+                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
+                            <div class="custom-block bg-white shadow-lg" style="border: 2px solid #80d0c7;">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-2"><strong>BiLSTM-Attention</strong></h5>
+                                            <p class="mb-0">Deep Learning: RNN Architecture</p>
+                                        </div>
+                                        <span class="badge bg-finance rounded-pill ms-auto">DL</span>
+                                    </div>
+                                    <p class="mb-3"><strong>Architecture:</strong> Bidirectional LSTM with additive attention mechanism. Embedding dim=100, hidden dim=128, dropout=0.3.</p>
+                                    <p class="mb-3"><strong>Training:</strong> AdamW optimizer (lr=1e-3), batch size 32, early stopping (patience=3). Uses weighted CrossEntropyLoss for class imbalance.</p>
+                                    <p class="mb-3"><strong>Key Features:</strong> Captures sequential dependencies and uses attention to focus on important words for classification.</p>
+                                    <div class="mt-auto">
+                                        <i class="bi-diagram-3 fs-1 text-success d-block text-center mb-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DistilBERT - Prominent DL Model -->
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <div class="custom-block bg-white shadow-lg" style="border: 2px solid #80d0c7;">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex mb-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-2"><strong>DistilBERT</strong></h5>
+                                            <p class="mb-0">Deep Learning: Transformer</p>
+                                        </div>
+                                        <span class="badge bg-advertising rounded-pill ms-auto">DL</span>
+                                    </div>
+                                    <p class="mb-3"><strong>Architecture:</strong> DistilBERT-base-uncased (66M parameters), distilled BERT maintaining 97% performance with 60% fewer parameters.</p>
+                                    <p class="mb-3"><strong>Training:</strong> Fine-tuned with HuggingFace Transformers (lr=5e-5, batch=16, warmup=0.06). Early stopping (patience=2).</p>
+                                    <p class="mb-3"><strong>Key Features:</strong> Pre-trained on large corpora, bidirectional context via self-attention, state-of-the-art performance.</p>
+                                    <div class="mt-auto">
+                                        <i class="bi-robot fs-1 text-warning d-block text-center mb-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="timeline-section section-padding" id="section_3">
+                <div class="section-overlay"></div>
+
+                <div class="container">
+                    <div class="row">
+
+                        <div class="col-12 text-center">
+                            <h2 class="text-white mb-4">Training Methodology</h2>
+                        </div>
+
+                        <div class="col-lg-10 col-12 mx-auto">
+                            <div class="timeline-container">
+                                <ul class="vertical-scrollable-timeline" id="vertical-scrollable-timeline">
+                                    <div class="list-progress">
+                                        <div class="inner"></div>
+                                    </div>
+
+                                    <li>
+                                        <h4 class="text-white mb-3">Data Preparation</h4>
+
+                                        <p class="text-white">The dataset is loaded from <code>data/labeled_data.csv</code> with columns: <code>text</code> and <code>class</code>. Data is split using stratified sampling (80% train, 10% validation, 10% test) to maintain class distribution. Classes are mapped as: 0→hateful, 1→offensive, 2→neutral.</p>
+
+                                        <div class="icon-holder">
+                                          <i class="bi-database"></i>
+                                        </div>
+                                    </li>
+                                    
+                                    <li>
+                                        <h4 class="text-white mb-3">Deep Learning Model Training</h4>
+
+                                        <p class="text-white"><strong>BiLSTM-Attention:</strong> Vocabulary built from training data (max 30K tokens), embeddings initialized randomly (dim=100). Trained with AdamW optimizer (lr=1e-3), batch size 32, max 128 sequence length. Early stopping based on validation macro-F1 with patience 3.</p>
+                                        <p class="text-white"><strong>DistilBERT:</strong> Fine-tuned from pre-trained distilbert-base-uncased using HuggingFace Transformers. Training with learning rate 5e-5, batch size 16, warmup ratio 0.06, weight decay 0.01. Early stopping with patience 2 based on macro-F1.</p>
+                                        <p class="text-white"><em>Note: Baseline ML models use TF-IDF vectorization with Naive Bayes and Logistic Regression for comparison.</em></p>
+
+                                        <div class="icon-holder">
+                                          <i class="bi-gear"></i>
+                                        </div>
+                                    </li>
+
+                                    <li>
+                                        <h4 class="text-white mb-3">Evaluation &amp; Metrics</h4>
+
+                                        <p class="text-white">All models (baseline ML and both deep learning models) are evaluated on the test set using accuracy and macro-averaged F1 score. Confusion matrices and classification reports are generated to analyze performance across all three classes. <strong>Deep learning models</strong> show superior performance compared to the baseline.</p>
+
+                                        <div class="icon-holder">
+                                          <i class="bi-graph-up"></i>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center mt-5">
+                            <p class="text-white">
+                                Explore the model architectures and technical details
+                                <a href="#section_2" class="btn custom-btn custom-border-btn ms-3">View Models</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="faq-section section-padding" id="section_4">
+                <div class="container">
+                    <div class="row">
+
+                        <div class="col-lg-6 col-12">
+                            <h2 class="mb-4">Project Details & Future Enhancements</h2>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        <div class="col-lg-5 col-12">
+                            <img src="{{ url_for('static', filename='images/faq_graphic.jpg') }}" class="img-fluid" alt="Project Details">
+                        </div>
+
+                        <div class="col-lg-6 col-12 m-auto">
+                            <div class="accordion" id="accordionExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Model Architecture Details
+                                        </button>
+                                    </h2>
+
+                                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            <strong>BiLSTM-Attention:</strong> Uses bidirectional LSTM layers (hidden_dim=128) with additive attention mechanism. The attention layer computes context vectors by weighting LSTM outputs, allowing the model to focus on relevant parts of the input sequence. Final classification uses a dropout layer (0.3) followed by a linear layer mapping to 3 classes.<br><br>
+                                            <strong>DistilBERT:</strong> Based on the Transformer architecture with 6 layers, 768 hidden dimensions, and 12 attention heads. Pre-trained on large text corpora using knowledge distillation from BERT, making it faster and lighter while maintaining performance.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingTwo">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Training Challenges & Solutions
+                                    </button>
+                                    </h2>
+
+                                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            <strong>Class Imbalance:</strong> Addressed using weighted loss functions and class weights computed from training data distribution. This ensures the models don't bias toward the majority class.<br><br>
+                                            <strong>Overfitting:</strong> Mitigated through dropout regularization (0.3), early stopping based on validation metrics, and weight decay (0.01 for DistilBERT).<br><br>
+                                            <strong>Computational Efficiency:</strong> DistilBERT chosen over full BERT for faster inference while BiLSTM uses smaller vocabulary and embedding dimensions for efficiency.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingThree">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Future Enhancements & Research Directions
+                                    </button>
+                                    </h2>
+
+                                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            <strong>1. Multi-lingual Support:</strong> Extend models to handle multiple languages using multilingual BERT or language-specific fine-tuning.<br><br>
+                                            <strong>2. Context-Aware Detection:</strong> Incorporate conversation context and user history for more accurate detection in social media platforms.<br><br>
+                                            <strong>3. Explainability:</strong> Add attention visualization and SHAP values to explain model predictions, crucial for transparency in hate speech detection.<br><br>
+                                            <strong>4. Ensemble Methods:</strong> Combine predictions from both models using weighted voting or stacking to improve robustness.<br><br>
+                                            <strong>5. Active Learning:</strong> Implement active learning strategies to continuously improve models with minimal labeled data.<br><br>
+                                            <strong>6. Real-time Processing:</strong> Optimize models for real-time inference in production environments with model quantization and pruning.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="explore-section section-padding" id="section_5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center mb-4">
+                            <h2 class="mb-3">Project Information</h2>
+                        </div>
+                    </div>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
+                                <div class="custom-block bg-white shadow-lg">
+                                    <div class="d-flex flex-column h-100">
+                                        <div class="d-flex mb-3">
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-2">Technical Stack</h5>
+                                            </div>
+                                        </div>
+                                        <ul class="list-unstyled mb-3">
+                                            <li class="mb-2"><strong>DL:</strong> PyTorch, HuggingFace</li>
+                                            <li class="mb-2"><strong>ML:</strong> scikit-learn</li>
+                                            <li class="mb-2"><strong>Backend:</strong> Flask</li>
+                                            <li class="mb-2"><strong>Deploy:</strong> Docker</li>
+                                            <li class="mb-0"><strong>Data:</strong> Pandas, NumPy</li>
+                                        </ul>
+                                        <div class="mt-auto">
+                                            <i class="bi-code-slash fs-1 text-primary d-block text-center mb-3"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
+                                <div class="custom-block bg-white shadow-lg">
+                                    <div class="d-flex flex-column h-100">
+                                        <div class="d-flex mb-3">
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-2">Objectives</h5>
+                                            </div>
+                                        </div>
+                                        <p class="mb-3">Compare BiLSTM-Attention & DistilBERT architectures for hate speech detection with baseline ML comparison.</p>
+                                        <p class="mb-3"><strong>Focus:</strong> Model complexity vs. performance</p>
+                                        <div class="mt-auto">
+                                            <i class="bi-bullseye fs-1 text-success d-block text-center mb-3"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-6 col-12">
+                                <div class="custom-block bg-white shadow-lg">
+                                    <div class="d-flex flex-column h-100">
+                                        <div class="d-flex mb-3">
+                                            <div class="flex-grow-1">
+                                                <h5 class="mb-2">Evaluation</h5>
+                                            </div>
+                                        </div>
+                                        <ul class="list-unstyled mb-3">
+                                            <li class="mb-2"><strong>Metrics:</strong> Accuracy, F1</li>
+                                            <li class="mb-2"><strong>Dataset:</strong> 3-class</li>
+                                            <li class="mb-2"><strong>Split:</strong> 80/10/10</li>
+                                            <li class="mb-0"><strong>Analysis:</strong> Confusion Matrix</li>
+                                        </ul>
+                                        <div class="mt-auto">
+                                            <i class="bi-graph-up fs-1 text-warning d-block text-center mb-3"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+<footer class="site-footer" style="padding: 2rem 0;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p class="text-white mb-0">University Project - Deep Learning Algorithm for Hate Speech Detection</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-              <form method="POST" action="{{ url_for('classify') }}">
-                <div class="mb-3">
-                  <label for="text" class="form-label">
-                    Enter text to analyze:
-                  </label>
-                  <textarea
-                    class="form-control"
-                    id="text"
-                    name="text"
-                    rows="5"
-                    required
-                  >
-{{ input_text or '' }}</textarea
-                  >
-                  <div class="form-text">
-                    Enter any text or tweet to check if it contains hate speech
-                    or offensive content.
-                  </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Analyze</button>
-              </form>
+        </footer>
 
-              {% if baseline_result or lstm_result or transformer_result %}
-              <hr />
-              <h4>Results:</h4>
 
-              {% if baseline_result %}
-              <div class="card mb-3">
-                <div class="card-header bg-secondary text-white">
-                  Baseline (Rules + Classical ML)
-                </div>
-                <div class="card-body">
-                  <h5>
-                    {{ baseline_result.label }} — {{
-                    '%.1f'|format(baseline_result.confidence) }}%
-                  </h5>
-                  <p>{{ baseline_result.explanation }}</p>
-                  {% if baseline_result.metadata %}
-                  <div class="metadata-section mb-2">
-                    {% if baseline_result.metadata.is_rule_based %}
-                    <span
-                      class="badge metadata-badge rule-based-badge"
-                      data-bs-toggle="tooltip"
-                      title="Classification based on predefined rules"
-                    >
-                      Rule-based
-                    </span>
-                    {% endif %} {% if baseline_result.metadata.flagged_context
-                    %}
-                    <span
-                      class="badge metadata-badge context-badge"
-                      data-bs-toggle="tooltip"
-                      title="Context disclaimer detected"
-                    >
-                      Context: {{ baseline_result.metadata.flagged_context }}
-                    </span>
-                    {% endif %} {% if baseline_result.metadata.semantic_alert %}
-                    <span
-                      class="badge metadata-badge semantic-badge"
-                      data-bs-toggle="tooltip"
-                      title="Semantic patterns detected"
-                    >
-                      Semantic Alert
-                    </span>
-                    {% endif %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              {% endif %} {% if lstm_result %}
-              <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                  Deep Learning: BiLSTM-Attention
-                </div>
-                <div class="card-body">
-                  {% if lstm_result.model_name and "unavailable" in
-                  lstm_result.model_name.lower() %}
-                  <span class="badge bg-warning text-dark">
-                    Model not trained
-                  </span>
-                  {% else %}
-                  <h5>
-                    {{ lstm_result.label }} — {{
-                    '%.1f'|format(lstm_result.confidence) }}%
-                  </h5>
-                  <p>Model: {{ lstm_result.model_name }}</p>
-                  {% endif %}
-                </div>
-              </div>
-              {% endif %} {% if transformer_result %}
-              <div class="card mb-3">
-                <div class="card-header bg-info text-white">
-                  Deep Learning: DistilBERT
-                </div>
-                <div class="card-body">
-                  {% if transformer_result.model_name and "unavailable" in
-                  transformer_result.model_name.lower() %}
-                  <span class="badge bg-warning text-dark">
-                    Model not trained
-                  </span>
-                  {% else %}
-                  <h5>
-                    {{ transformer_result.label }} — {{
-                    '%.1f'|format(transformer_result.confidence) }}%
-                  </h5>
-                  <p>Model: {{ transformer_result.model_name }}</p>
-                  {% endif %}
-                </div>
-              </div>
-              {% endif %} {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <!-- JAVASCRIPT FILES -->
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}?v=2.0"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}?v=2.0"></script>
+        <script src="{{ url_for('static', filename='js/jquery.sticky.js') }}?v=2.0"></script>
+        <script src="{{ url_for('static', filename='js/click-scroll.js') }}?v=2.0"></script>
+        <script src="{{ url_for('static', filename='js/custom.js') }}?v=2.0"></script>
 
-    <!-- How it Works Modal -->
-    <div
-      class="modal fade"
-      id="howItWorksModal"
-      tabindex="-1"
-      aria-labelledby="howItWorksModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="howItWorksModalLabel">How it Works</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p>
-              This system uses multiple machine learning and deep learning
-              models to detect hate speech and offensive content:
-            </p>
-            <ul>
-              <li>
-                <strong>Baseline:</strong>
-                Combines rule-based detection with classical ML models (Naive
-                Bayes, Logistic Regression)
-              </li>
-              <li>
-                <strong>BiLSTM-Attention:</strong>
-                Deep learning model using bidirectional LSTM with attention
-                mechanism
-              </li>
-              <li>
-                <strong>DistilBERT:</strong>
-                Transformer-based model fine-tuned for hate speech detection
-              </li>
-            </ul>
-            <p>
-              The system analyzes your text and provides classification results
-              from each model, along with confidence scores.
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
+    </body>
 </html>

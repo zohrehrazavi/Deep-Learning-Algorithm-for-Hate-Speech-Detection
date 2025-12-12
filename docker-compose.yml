@@ -8,6 +8,8 @@ services:
     volumes:
       - ./models:/app/models
       - ./data:/app/data
+      - ./static:/app/static
+      - ./templates:/app/templates
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
